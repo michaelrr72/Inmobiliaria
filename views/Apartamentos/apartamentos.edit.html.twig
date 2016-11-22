@@ -1,0 +1,92 @@
+{% extends 'layout.html.twig' %}
+
+{% block title 'Editar Apartamento' %}
+
+{% block body %}
+
+<form class="form-horizontal" method="post" action="{{ url('aptos-save') }}">
+  <fieldset>
+
+    <!-- Titulo -->
+    <legend>Crear o Editar Apartamento</legend>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Id</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="id" value="{{ apto_to_edit.id }}"
+            placeholder="id del apartamento" required="">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Nombre</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="nombre" value="{{ apto_to_edit.nombre }}"
+            placeholder="nombre del apartamento" required="">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Descripción</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="descripcion" value="{{ apto_to_edit.descripcion }}"
+            placeholder="Descripción del apartamento" required="">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Precio</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="precio" value="{{ apto_to_edit.precio }}"
+            placeholder="Precio arriendo - alquiler" required="">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Latitud</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="latitud" value="{{ apto_to_edit.latitud }}"
+            placeholder="latitud" required="">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Longitud</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="longitud" value="{{ apto_to_edit.longitud }}"
+            placeholder="longitud" required="">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-md-4 control-label" for="textinput">Tipo</label>
+      <div class="col-md-4">
+        <input type="text" class="form-control input-md"
+            name="tipo" value="{{ apto_to_edit.tipo }}"
+            placeholder="tipo" required="">
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="form-group">
+      <div class="col-md-8">
+        <div class="pull-right">
+          <button class="btn btn-primary" type="submit">Guardar</button>
+          <a href="{{ url('aptos-list') }}>" >
+            <button class="btn btn-primary">Cancelar</button>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </fieldset>
+</form>
+
+
+{% endblock %}
