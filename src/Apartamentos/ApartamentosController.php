@@ -15,204 +15,197 @@ use Apartamentos;
 use Tipos;
 use Comentarios;
 
-class ApartamentosController implements ControllerProviderInterface
-{
+class ApartamentosController implements ControllerProviderInterface {
 
-  public function connect(Application $app)
-  {
-    // creates a new controller based on the default route
-    $controller = $app['controllers_factory'];
+    public function connect(Application $app) {
+        // creates a new controller based on the default route
+        $controller = $app['controllers_factory'];
 
-    // la ruta "/aptos/list"
-    $controller->get('/list', function() use($app) {
+        // la ruta "/aptos/list"
+        $controller->get('/list', function() use($app) {
 
-      // obtiene el nombre de apartamento de la sesión
-      $user = $app['session']->get('user');
-      $apartamentos = ApartamentosQuery::create()->find();
-      foreach ($apartamentos as $apartamento) {
-        $ide= $apartamento->getId();
-        $n=$apartamento->getNombre();
-        $d=$apartamento->getDescripcion();
-        $p=$apartamento->getPrecio();
-        $la=$apartamento->getLatitud();
-        $lo=$apartamento->getLongitud();
-        $ti=$apartamento->getTipos();
-        $aptos = array(
-            'id' => $ide,
-            'nombre' => $n,
-            'descripcion' => $d,
-            'precio' => $p,
-            'latitud' => $la,
-            'longitud' => $lo,
-            'tipo' => $ti
-          );
-      }
-        
+            // obtiene el nombre de apartamento de la sesión
+            $user = $app['session']->get('user');
+            $apartamentos = ApartamentosQuery::create()->find();
 
-      // ya ingreso un apartamento ?
-      if ( isset( $user ) && $user != '' ) {
-        // muestra la plantilla
-        return $app['twig']->render('Apartamentos/apartamentos.list.html.twig', array(
-          'user' => $user,
-          'aptos' => $aptos
-        ));
+            if (!isset($aptos)) {
+                $apto = array();
+            }
+            foreach ($apartamentos as $apartamento) {
+                $ide = $apartamento->getId();
+                $n = $apartamento->getNombre();
+                $d = $apartamento->getDescripcion();
+                $p = $apartamento->getPrecio();
+                $la = $apartamento->getLatitud();
+                $lo = $apartamento->getLongitud();
+                $ti = $apartamento->getTipos();
+                $aptos[] = array(
+                    'id' => $ide,
+                    'nombre' => $n,
+                    'descripcion' => $d,
+                    'precio' => $p,
+                    'latitud' => $la,
+                    'longitud' => $lo,
+                    'tipo' => $ti
+                );
+            }
 
-      } else {
-        // redirige el navegador a "/login"
-        return $app->redirect( $app['url_generator']->generate('login'));
-      }
 
-    // hace un bind
-    })->bind('aptos-list');
-    
-    // la ruta "/aptos/new"
-    $controller->get('/new', function() use($app) {
+            // ya ingreso un apartamento ?
+            if (isset($user) && $user != '') {
+                // muestra la plantilla
+                return $app['twig']->render('Apartamentos/apartamentos.list.html.twig', array(
+                            'user' => $user,
+                            'aptos' => $aptos
+                ));
+            } else {
+                // redirige el navegador a "/login"
+                return $app->redirect($app['url_generator']->generate('login'));
+            }
 
-      // obtiene el nombre de apartamento de la sesión
-      $user = $app['session']->get('user');
+            // hace un bind
+        })->bind('aptos-list');
 
-      // ya ingreso un apartamento ?
-      if ( isset( $user ) && $user != '' ) {
-        
-        // muestra la plantilla
-        return $app['twig']->render('Apartamentos/apartamentos.edit.html.twig', array(
-          'user' => $user,
-          'index' => '',
-          'apto_to_edit' => array(
-              'id' => '',
-              'nombre' => '',
-              'descripcion' => '',
-              'precio' => '',
-              'latitud' => '',
-              'longitud' => '',
-              'tipo' => ''
-            )
-        ));
+        // la ruta "/aptos/new"
+        $controller->get('/new', function() use($app) {
+          // obtiene el nombre de apartamento de la sesión
+          $user = $app['session']->get('user');
+          // ya ingreso un apartamento ?
+          if ( isset( $user ) && $user != '' ) {
+            
+            // muestra la plantilla
+            return $app['twig']->render('Apartamentos/apartamentos.edit.html.twig', array(
+              'user' => $user,
+              'index' => '',
+              'apto_to_edit' => array(
+                  'id' => '',
+                  'nombre' => '',
+                  'descripcion' => '',
+                  'precio' => '',
+                  'latitud' => '',
+                  'longitud' => '',
+                  'tipo' => ''
+                )
+            ));
+          } else {
+            // redirige el navegador a "/login"
+            return $app->redirect( $app['url_generator']->generate('login'));
+          }
+        // hace un bind
+        })->bind('aptos-new');
 
-      } else {
-        // redirige el navegador a "/login"
-        return $app->redirect( $app['url_generator']->generate('login'));
-      }
+        // la ruta "/aptos/edit"
+        $controller->get('/edit/{index}', function($index) use($app) {
 
-    // hace un bind
-    })->bind('aptos-new');
+            // obtiene el nombre de apartamento de la sesión
+            $user = $app['session']->get('user');
 
-    // la ruta "/aptos/edit"
-    $controller->get('/edit/{index}', function($index) use($app) {
+            // obtiene los apartamentos de la sesión
+            $aptos = $app['session']->get('aptos');
+            if (!isset($aptos)) {
+                $aptos = array();
+            }
 
-      // obtiene el nombre de apartamento de la sesión
-      $user = $app['session']->get('user');
+            // no ha ingresado el apartamento (no ha hecho login) ?
+            if (!isset($user) || $user == '') {
+                // redirige el navegador a "/login"
+                return $app->redirect($app['url_generator']->generate('login'));
 
-      // obtiene los apartamentos de la sesión
-      $aptos = $app['session']->get('aptos');
-      if (!isset($aptos)) {
-        $aptos = array();
-      }
+                // no existe un apartamento en esa posición ?
+            } else if (!isset($aptos[$index])) {
+                // muestra el formulario de nuevo apartamento
+                return $app->redirect($app['url_generator']->generate('aptos-new'));
+            } else {
+                // muestra la plantilla
+                return $app['twig']->render('Apartamentos/apartamentos.edit.html.twig', array(
+                            'user' => $user,
+                            'index' => $index,
+                            'apto_to_edit' => $aptos[$index]
+                ));
+            }
 
-      // no ha ingresado el apartamento (no ha hecho login) ?
-      if ( !isset( $user ) || $user == '' ) {
-        // redirige el navegador a "/login"
-        return $app->redirect( $app['url_generator']->generate('login'));
+            // hace un bind
+        })->bind('aptos-edit');
 
-      // no existe un apartamento en esa posición ?
-      } else if ( !isset($aptos[$index])) {
-        // muestra el formulario de nuevo apartamento
-        return $app->redirect( $app['url_generator']->generate('aptos-new') );
+        $controller->post('/save', function( Request $request ) use ( $app ) {
 
-      } else {
-        // muestra la plantilla
-        return $app['twig']->render('Apartamentos/apartamentos.edit.html.twig', array(
-          'user' => $user,
-          'index' => $index,
-          'apto_to_edit' => $aptos[$index]
-        ));
+            $aptos = $app['session']->get('aptos');
+            if (!isset($aptos)) {
+                $aptos = array();
+            }
 
-      }
+            // index no está incluido en la petición
+            $index = $request->get('index');
+            if (!isset($index) || $index == '') {
+                // agrega el nuevo apartamento
+                $aptos[] = array(
+                    $id => $request->get('id'),
+                    $nombre => $request->get('nombre'),
+                    $descripcion => $request->get('descripcion'),
+                    $precio => $request->get('precio'),
+                    $latitud => $request->get('latitud'),
+                    $longitud => $request->get('longitud'),
+                    $tipo => $request->get('tipo')
+                );
+                $tip = new Tipos();
+                $tip->setNombre($tipo);
 
-    // hace un bind
-    })->bind('aptos-edit');
+                $apto = new Apartamentos();
+                $apto->setNombre($nombre);
+                $apto->setDescripcion($descripcion);
+                $apto->setPrecio($precio);
+                $apto->setLatitud($latitud);
+                $apto->setLongitud($longitud);
+                $apto->setTipos($tip);
+                $apto->save();
+            } else {
+                // modifica el apartamento en la posición $index
+                $aptos[$index] = array(
+                    $id => $request->get('id'),
+                    $nombre => $request->get('nombre'),
+                    $descripcion => $request->get('descripcion'),
+                    $precio => $request->get('precio'),
+                    $latitud => $request->get('latitud'),
+                    $longitud => $request->get('longitud'),
+                    $tipo => $request->get('tipo')
+                );
+                $apto = ApartamentosQuery::create()->findOneById($index);
+                $apto->setNombre($nombre);
+                $apto->setDescripcion($descripcion);
+                $apto->setPrecio($precio);
+                $apto->setLatitud($latitud);
+                $apto->setLongitud($longitud);
+                $apto->save();
+            }
 
-    $controller->post('/save', function( Request $request ) use ( $app ){
 
-      $aptos = $app['session']->get('aptos');
-      if (!isset($aptos)) {
-        $aptos = array();
-      }
+            // actualiza los datos en sesión
+            $app['session']->set('aptos', $aptos);
 
-      // index no está incluido en la petición
-      $index = $request->get('index');
-      if ( !isset($index) || $index == '' ) {
-        // agrega el nuevo apartamento
-        $aptos[] = array(
-          $id => $request->get('id'),
-          $nombre => $request->get('nombre'),
-          $descripcion => $request->get('descripcion'),
-          $precio => $request->get('precio'),
-          $latitud => $request->get('latitud'),
-          $longitud => $request->get('longitud'),
-          $tipo => $request->get('tipo')
-          
-        );
-        $tip = new Tipos();
-        $tip->setNombre($tipo);
-        
-        $apto = new Apartamentos();
-        $apto->setNombre($nombre);
-        $apto->setDescripcion($descripcion);
-        $apto->setPrecio($precio);
-        $apto->setLatitud($latitud);
-        $apto->setLongitud($longitud);
-        $apto->setTipos($tip);
-        $apto->save();
-      } else {
-        // modifica el apartamento en la posición $index
-        $aptos[$index] = array(
-          $id => $request->get('id'),
-          $nombre => $request->get('nombre'),
-          $descripcion => $request->get('descripcion'),
-          $precio => $request->get('precio'),
-          $latitud => $request->get('latitud'),
-          $longitud => $request->get('longitud'),
-          $tipo => $request->get('tipo')
-        );
-        $apto = ApartamentosQuery::create()->findOneById($index);
-        $apto->setNombre($nombre);
-        $apto->setDescripcion($descripcion);
-        $apto->setPrecio($precio);
-        $apto->setLatitud($latitud);
-        $apto->setLongitud($longitud);
-        $apto->save();
-      }
-      
+            // muestra la lista de apartamentos
+            return $app->redirect($app['url_generator']->generate('aptos-list'));
+        })->bind('aptos-save');
 
-      // actualiza los datos en sesión
-      $app['session']->set('aptos', $aptos);
+        $controller->get('/delete/{index}', function($index) use ($app) {
 
-      // muestra la lista de apartamentos
-      return $app->redirect( $app['url_generator']->generate('aptos-list') );
-    })->bind('aptos-save');
+            // obtiene los apartamentos de la sesión
+            $aptos = $app['session']->get('aptos');
+            if (!isset($aptos)) {
+                $aptos = array();
+            }
 
-    $controller->get('/delete/{index}', function($index) use ($app) {
+            // no existe un apartamento en esa posición ?
+            if (isset($aptos[$index])) {
+                $apartamentos = ApartamentosQuery::create()->findOneById($index);
+                $apartamentos->delete();
+                $app['session']->set('aptos', $aptos);
+            }
 
-      // obtiene los apartamentos de la sesión
-      $aptos = $app['session']->get('aptos');
-      if (!isset($aptos)) {
-        $aptos = array();
-      }
+            // muestra la lista de apartamentos
+            return $app->redirect($app['url_generator']->generate('aptos-list'));
+        })->bind('aptos-delete');
 
-      // no existe un apartamento en esa posición ?
-      if ( isset($aptos[$index])) {
-        $apartamentos = ApartamentosQuery::create()->findOneById($index);
-        $apartamentos->delete();
-        $app['session']->set('aptos', $aptos);
-      }
-
-      // muestra la lista de apartamentos
-      return $app->redirect( $app['url_generator']->generate('aptos-list') );
-
-    })->bind('aptos-delete');
-
-    return $controller;
-  }
+        return $controller;
+    }
 
 }
