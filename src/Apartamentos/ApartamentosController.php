@@ -105,14 +105,14 @@ class ApartamentosController implements ControllerProviderInterface {
             if (!isset($aptos)) {
                 $aptos = array();
             }
-
+            $apto = ApartamentosQuery::create()->findPK($index);
             // no ha ingresado el apartamento (no ha hecho login) ?
             if (!isset($user) || $user == '') {
                 // redirige el navegador a "/login"
                 return $app->redirect($app['url_generator']->generate('login'));
 
                 // no existe un apartamento en esa posición ?
-            } else if (!isset($aptos[$index])) {
+            } else if ($apto == NULL) {
                 // muestra el formulario de nuevo apartamento
                 return $app->redirect($app['url_generator']->generate('aptos-new'));
             } else {
@@ -120,7 +120,7 @@ class ApartamentosController implements ControllerProviderInterface {
                 return $app['twig']->render('Apartamentos/apartamentos.edit.html.twig', array(
                             'user' => $user,
                             'index' => $index,
-                            'apto_to_edit' => $aptos[$index]
+                            'apto_to_edit' => $apto
                 ));
             }
 
@@ -138,43 +138,43 @@ class ApartamentosController implements ControllerProviderInterface {
             $index = $request->get('index');
             if (!isset($index) || $index == '') {
                 // agrega el nuevo apartamento
-                $aptos[] = array(
-                    $id => $request->get('id'),
-                    $nombre => $request->get('nombre'),
-                    $descripcion => $request->get('descripcion'),
-                    $precio => $request->get('precio'),
-                    $latitud => $request->get('latitud'),
-                    $longitud => $request->get('longitud'),
-                    $tipo => $request->get('tipo')
+                $aptos2 = array(
+                    id => $request->get('id'),
+                    nombre => $request->get('nombre'),
+                    descripcion => $request->get('descripcion'),
+                    precio => $request->get('precio'),
+                    latitud => $request->get('latitud'),
+                    longitud => $request->get('longitud'),
+                    tipo => $request->get('tipo')
                 );
                 $tip = new Tipos();
-                $tip->setNombre($tipo);
+                $tip->setNombre($aptos2['tipo']);
 
                 $apto = new Apartamentos();
-                $apto->setNombre($nombre);
-                $apto->setDescripcion($descripcion);
-                $apto->setPrecio($precio);
-                $apto->setLatitud($latitud);
-                $apto->setLongitud($longitud);
+                $apto->setNombre($aptos2['nombre']);
+                $apto->setDescripcion($aptos2['descripcion']);
+                $apto->setPrecio($aptos2['precio']);
+                $apto->setLatitud($aptos2['latitud']);
+                $apto->setLongitud($aptos2['longitud']);
                 $apto->setTipos($tip);
                 $apto->save();
             } else {
                 // modifica el apartamento en la posición $index
                 $aptos[$index] = array(
-                    $id => $request->get('id'),
-                    $nombre => $request->get('nombre'),
-                    $descripcion => $request->get('descripcion'),
-                    $precio => $request->get('precio'),
-                    $latitud => $request->get('latitud'),
-                    $longitud => $request->get('longitud'),
-                    $tipo => $request->get('tipo')
+                    id => $request->get('id'),
+                    nombre => $request->get('nombre'),
+                    descripcion => $request->get('descripcion'),
+                    precio => $request->get('precio'),
+                    latitud => $request->get('latitud'),
+                    longitud => $request->get('longitud'),
+                    tipo => $request->get('tipo')
                 );
                 $apto = ApartamentosQuery::create()->findOneById($index);
-                $apto->setNombre($nombre);
-                $apto->setDescripcion($descripcion);
-                $apto->setPrecio($precio);
-                $apto->setLatitud($latitud);
-                $apto->setLongitud($longitud);
+                $apto->setNombre($aptos2['nombre']);
+                $apto->setDescripcion($aptos2['descripcion']);
+                $apto->setPrecio($aptos2['precio']);
+                $apto->setLatitud($aptos2['latitud']);
+                $apto->setLongitud($aptos2['longitud']);
                 $apto->save();
             }
 
@@ -188,18 +188,9 @@ class ApartamentosController implements ControllerProviderInterface {
 
         $controller->get('/delete/{index}', function($index) use ($app) {
 
-            // obtiene los apartamentos de la sesión
-            $aptos = $app['session']->get('aptos');
-            if (!isset($aptos)) {
-                $aptos = array();
-            }
-
-            // no existe un apartamento en esa posición ?
-            if (isset($aptos[$index])) {
-                $apartamentos = ApartamentosQuery::create()->findOneById($index);
-                $apartamentos->delete();
-                $app['session']->set('aptos', $aptos);
-            }
+            // obtiene el apartamento
+            $apto = ApartamentosQuery::create()->findPK($index);
+            $apto->delete();
 
             // muestra la lista de apartamentos
             return $app->redirect($app['url_generator']->generate('aptos-list'));

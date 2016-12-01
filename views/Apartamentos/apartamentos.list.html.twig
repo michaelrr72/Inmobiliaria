@@ -65,25 +65,25 @@
         </div>
     </div>
 </div>
-<!--<div id="map-canvas"></div>
-        <!-- script references
+<div id="map-canvas"></div>
+        <!-- script references-->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
 		<script src="//maps.googleapis.com/maps/api/js?sensor=false&extension=.js&output=embed"></script>
 		<script>
 
-        $(document).ready(function(){/* google maps -----------------------------------------------------*/
+        $(document).ready(function(){
+        /* google maps -----------------------------------------------------*/
         google.maps.event.addDomListener(window, 'load', initialize);
 
         function initialize() {
           var marker;
           {% if aptos is empty %}
-          /* position Amsterdam */
           var latlng = new google.maps.LatLng(4.632439, -74.065524);
           {% else %}
           var latlng = new google.maps.LatLng({{ aptos[0].latitud }}, {{ aptos[0].longitud }});
           {% endif %}
-          var <mapOptions></mapOptions> = {
+          var mapOptions = {
             center: latlng,
             scrollWheel: false,
             zoom: 13
@@ -98,13 +98,11 @@
             url: '/',
             animation: google.maps.Animation.BOUNCE
           });
-
           marker.setMap(map);
           {% endfor %}
-
         };
         /* end google maps -----------------------------------------------------*/
         });
 
-    </script>-->
+    </script>
 {% endblock %}
